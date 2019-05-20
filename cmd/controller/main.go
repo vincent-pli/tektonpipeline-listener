@@ -28,10 +28,10 @@ import (
 	// Uncomment the following line to load the gcp plugin (only required to authenticate against GKE clusters).
 	// _ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 
-	controllerImp "github.com/vincent-pli/sample-controller/pkg/controller"
-	clientset "github.com/vincent-pli/sample-controller/pkg/generated/clientset/versioned"
-	informers "github.com/vincent-pli/sample-controller/pkg/generated/informers/externalversions"
-	"github.com/vincent-pli/sample-controller/pkg/signals"
+	controllerImp "github.com/vincent-pli/tektonpipeline-listener/pkg/controller"
+	clientset "github.com/vincent-pli/tektonpipeline-listener/pkg/generated/clientset/versioned"
+	informers "github.com/vincent-pli/tektonpipeline-listener/pkg/generated/informers/externalversions"
+	"github.com/vincent-pli/tektonpipeline-listener/pkg/signals"
 )
 
 var (
