@@ -1,8 +1,8 @@
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: sample-role
-  namespace: sample
+  name: listener-role
+  namespace: listener
 rules:
   - apiGroups: [""]
     resources: ["pods", "namespaces", "secrets", "events", "serviceaccounts", "configmaps", "persistentvolumeclaims"]
@@ -17,5 +17,5 @@ rules:
     resources: ["mutatingwebhookconfigurations"]
     verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
   - apiGroups: ["samplecontroller.k8s.io"]
-    resources: ["foo"]
+    resources: ["listenerTemplate"]
     verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]

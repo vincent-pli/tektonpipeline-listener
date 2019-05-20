@@ -14,12 +14,12 @@
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
-  name: sample-rolebinding
+  name: listener-rolebinding
 subjects:
   - kind: ServiceAccount
     name: default
-    namespace: sample
+    namespace: listener
 roleRef:
   kind: ClusterRole
-  name: sample-role
+  name: listener-role
   apiGroup: rbac.authorization.k8s.io

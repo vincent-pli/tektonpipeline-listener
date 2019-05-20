@@ -14,19 +14,18 @@
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  name: sample-controller
-  namespace: sample
+  name: listener-controller
+  namespace: listener
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: sample-controller
+        app: listener-controller
     spec:
-      serviceAccountName: sample-controller
       containers:
-      - name: sample-controller
-        image: github.com/vincent-pli/sample-controller/cmd/controller
+      - name: listener-controller
+        image: github.com/vincent-pli/tektonpipeline-listener/cmd/controller
         env:
         - name: NAME
           value: pengli
