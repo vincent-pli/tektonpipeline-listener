@@ -49,14 +49,14 @@ type TemplateParam struct {
 	Default string `json:"default,omitempty"`
 }
 
-// ListenerTemplateStatus is the status for a Foo resource
+// ListenerTemplateStatus is the status for a ListenerTemplate resource
 type ListenerTemplateStatus struct {
 	AvailableReference int32 `json:"availableReference"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// ListenerTemplateList is a list of Foo resources
+// ListenerTemplateList is a list of ListenerTemplate resources
 type ListenerTemplateList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata"`
