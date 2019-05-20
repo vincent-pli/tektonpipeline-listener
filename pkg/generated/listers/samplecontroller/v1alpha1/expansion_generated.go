@@ -18,10 +18,10 @@ limitations under the License.
 
 package v1alpha1
 
-// FooListerExpansion allows custom methods to be added to
-// FooLister.
-type FooListerExpansion interface{}
+// ListenerTemplateListerExpansion allows custom methods to be added to
+// ListenerTemplateLister.
+type ListenerTemplateListerExpansion interface{}
 
-// FooNamespaceListerExpansion allows custom methods to be added to
-// FooNamespaceLister.
-type FooNamespaceListerExpansion interface{}
+// ListenerTemplateNamespaceListerExpansion allows custom methods to be added to
+// ListenerTemplateNamespaceLister.
+type ListenerTemplateNamespaceListerExpansion interface{}

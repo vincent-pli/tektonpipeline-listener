@@ -19,8 +19,8 @@ limitations under the License.
 package samplecontroller
 
 import (
-	internalinterfaces "github.com/vincent-pli/sample-controller/pkg/generated/informers/externalversions/internalinterfaces"
-	v1alpha1 "github.com/vincent-pli/sample-controller/pkg/generated/informers/externalversions/samplecontroller/v1alpha1"
+	internalinterfaces "github.com/vincent-pli/tektonpipeline-listener/pkg/generated/informers/externalversions/internalinterfaces"
+	v1alpha1 "github.com/vincent-pli/tektonpipeline-listener/pkg/generated/informers/externalversions/samplecontroller/v1alpha1"
 )
 
 // Interface provides access to each of this group's versions.

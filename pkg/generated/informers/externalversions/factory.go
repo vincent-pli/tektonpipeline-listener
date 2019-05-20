@@ -23,9 +23,9 @@ import (
 	sync "sync"
 	time "time"
 
-	versioned "github.com/vincent-pli/sample-controller/pkg/generated/clientset/versioned"
-	internalinterfaces "github.com/vincent-pli/sample-controller/pkg/generated/informers/externalversions/internalinterfaces"
-	samplecontroller "github.com/vincent-pli/sample-controller/pkg/generated/informers/externalversions/samplecontroller"
+	versioned "github.com/vincent-pli/tektonpipeline-listener/pkg/generated/clientset/versioned"
+	internalinterfaces "github.com/vincent-pli/tektonpipeline-listener/pkg/generated/informers/externalversions/internalinterfaces"
+	samplecontroller "github.com/vincent-pli/tektonpipeline-listener/pkg/generated/informers/externalversions/samplecontroller"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
