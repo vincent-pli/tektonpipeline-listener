@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Knative Authors
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,56 +17,67 @@ limitations under the License.
 package main
 
 import (
-	"log"
+	"flag"
+	"time"
 
-	"github.com/knative/eventing-sources/contrib/gitlab/pkg/apis"
-	controller "github.com/knative/eventing-sources/contrib/gitlab/pkg/reconciler"
-	"github.com/knative/pkg/logging/logkey"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
-	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	"sigs.k8s.io/controller-runtime/pkg/client/config"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"
+	kubeinformers "k8s.io/client-go/informers"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/klog"
+
+	// Uncomment the following line to load the gcp plugin (only required to authenticate against GKE clusters).
+	// _ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+
+	controllerImp "github.com/vincent-pli/sample-controller/pkg/controller"
+	clientset "github.com/vincent-pli/sample-controller/pkg/generated/clientset/versioned"
+	informers "github.com/vincent-pli/sample-controller/pkg/generated/informers/externalversions"
+	"github.com/vincent-pli/sample-controller/pkg/signals"
+)
+
+var (
+	masterURL  string
+	kubeconfig string
 )
 
 func main() {
-	// Get a config to talk to the API server
-	logCfg := zap.NewProductionConfig()
-	logCfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
-	logger, err := logCfg.Build()
+	flag.Parse()
+
+	// set up signals so we handle the first shutdown signal gracefully
+	stopCh := signals.SetupSignalHandler()
+
+	cfg, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfig)
 	if err != nil {
-		log.Fatal(err)
+		klog.Fatalf("Error building kubeconfig: %s", err.Error())
 	}
 
-	logger = logger.With(zap.String(logkey.ControllerType, "gitlab-controller"))
-	cfg, err := config.GetConfig()
+	kubeClient, err := kubernetes.NewForConfig(cfg)
 	if err != nil {
-		log.Fatal(err)
+		klog.Fatalf("Error building kubernetes clientset: %s", err.Error())
 	}
 
-	// Create a new Cmd to provide shared dependencies and start components
-	mgr, err := manager.New(cfg, manager.Options{})
+	exampleClient, err := clientset.NewForConfig(cfg)
 	if err != nil {
-		log.Fatal(err)
+		klog.Fatalf("Error building example clientset: %s", err.Error())
 	}
 
-	log.Printf("Registering Components.")
+	kubeInformerFactory := kubeinformers.NewSharedInformerFactory(kubeClient, time.Second*30)
+	exampleInformerFactory := informers.NewSharedInformerFactory(exampleClient, time.Second*30)
 
-	// Setup Scheme for all resources
-	if err := apis.AddToScheme(mgr.GetScheme()); err != nil {
-		log.Fatal(err)
+	controller := controllerImp.NewController(kubeClient, exampleClient,
+		kubeInformerFactory.Apps().V1().Deployments(),
+		exampleInformerFactory.Samplecontroller().V1alpha1().Foos())
+
+	// notice that there is no need to run Start methods in a separate goroutine. (i.e. go kubeInformerFactory.Start(stopCh)
+	// Start method is non-blocking and runs all registered informers in a dedicated goroutine.
+	kubeInformerFactory.Start(stopCh)
+	exampleInformerFactory.Start(stopCh)
+
+	if err = controller.Run(2, stopCh); err != nil {
+		klog.Fatalf("Error running controller: %s", err.Error())
 	}
+}
 
-	log.Printf("Setting up Controller.")
-
-	// Setup gitlab source Controller
-	if err := controller.Add(mgr, logger.Sugar()); err != nil {
-		log.Fatal(err)
-	}
-
-	log.Printf("Starting gitlab source controller.")
-
-	// Start the Cmd
-	log.Fatal(mgr.Start(signals.SetupSignalHandler()))
+func init() {
+	flag.StringVar(&kubeconfig, "kubeconfig", "", "Path to a kubeconfig. Only required if out-of-cluster.")
+	flag.StringVar(&masterURL, "master", "", "The address of the Kubernetes API server. Overrides any value in kubeconfig. Only required if out-of-cluster.")
 }
