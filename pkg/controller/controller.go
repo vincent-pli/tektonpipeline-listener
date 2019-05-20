@@ -36,14 +36,14 @@ import (
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog"
 
-	samplev1alpha1 "github.com/vincent-pli/sample-controller/pkg/apis/samplecontroller/v1alpha1"
-	clientset "github.com/vincent-pli/sample-controller/pkg/generated/clientset/versioned"
-	samplescheme "github.com/vincent-pli/sample-controller/pkg/generated/clientset/versioned/scheme"
-	informers "github.com/vincent-pli/sample-controller/pkg/generated/informers/externalversions/samplecontroller/v1alpha1"
-	listers "github.com/vincent-pli/sample-controller/pkg/generated/listers/samplecontroller/v1alpha1"
+	samplev1alpha1 "github.com/vincent-pli/tektonpipeline-listener/pkg/apis/samplecontroller/v1alpha1"
+	clientset "github.com/vincent-pli/tektonpipeline-listener/pkg/generated/clientset/versioned"
+	samplescheme "github.com/vincent-pli/tektonpipeline-listener/pkg/generated/clientset/versioned/scheme"
+	informers "github.com/vincent-pli/tektonpipeline-listener/pkg/generated/informers/externalversions/samplecontroller/v1alpha1"
+	listers "github.com/vincent-pli/tektonpipeline-listener/pkg/generated/listers/samplecontroller/v1alpha1"
 )
 
-const controllerAgentName = "sample-controller"
+const controllerAgentName = "tektonpipeline-listener"
 
 const (
 	// SuccessSynced is used as part of the Event 'reason' when a Foo is synced
@@ -91,8 +91,8 @@ func NewController(
 	fooInformer informers.FooInformer) *Controller {
 
 	// Create event broadcaster
-	// Add sample-controller types to the default Kubernetes Scheme so Events can be
-	// logged for sample-controller types.
+	// Add tektonpipeline-listener types to the default Kubernetes Scheme so Events can be
+	// logged for tektonpipeline-listener types.
 	utilruntime.Must(samplescheme.AddToScheme(scheme.Scheme))
 	klog.V(4).Info("Creating event broadcaster")
 	eventBroadcaster := record.NewBroadcaster()
