@@ -86,7 +86,7 @@ func NewController(
 	kubeclientset kubernetes.Interface,
 	sampleclientset clientset.Interface,
 	deploymentInformer appsinformers.DeploymentInformer,
-	listenerTemplateInformer informers.FooInformer) *Controller {
+	listenerTemplateInformer informers.ListenerTemplateInformer) *Controller {
 
 	// Create event broadcaster
 	// Add tektonpipeline-listener types to the default Kubernetes Scheme so Events can be
@@ -114,7 +114,6 @@ func NewController(
 	listenerTemplateInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: controller.enqueuelistenerTemplate,
 		UpdateFunc: func(old, new interface{}) {
-			enqueuelistenerTemplate
 			controller.enqueuelistenerTemplate(new)
 		},
 	})
@@ -309,16 +308,16 @@ func (c *Controller) syncHandler(key string) error {
 
 	// Finally, we update the status block of the Foo resource to reflect the
 	// current state of the world
-	err = c.updateFooStatus(listenerTemplate, deployment)
+	err = c.updatelistenerTemplateStatus(listenerTemplate)
 	if err != nil {
 		return err
 	}
 
-	c.recorder.Event(foo, corev1.EventTypeNormal, SuccessSynced, MessageResourceSynced)
+	c.recorder.Event(listenerTemplate, corev1.EventTypeNormal, SuccessSynced, MessageResourceSynced)
 	return nil
 }
 
-func (c *Controller) updateFooStatus(listenerTemplate *samplev1alpha1.ListenerTemplate) error {
+func (c *Controller) updatelistenerTemplateStatus(listenerTemplate *samplev1alpha1.ListenerTemplate) error {
 	// NEVER modify objects from the store. It's a read-only, local cache.
 	// You can use DeepCopy() to make a deep copy of original object and modify this copy
 	// Or create a copy manually for better performance
