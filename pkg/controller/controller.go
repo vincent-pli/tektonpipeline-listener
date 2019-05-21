@@ -328,7 +328,7 @@ func (c *Controller) updatelistenerTemplateStatus(listenerTemplate *samplev1alph
 	// we must use Update instead of UpdateStatus to update the Status block of the Foo resource.
 	// UpdateStatus will not allow changes to the Spec of the resource,
 	// which is ideal for ensuring nothing other than resource status has been updated.
-	_, err := c.sampleclientset.SamplecontrollerV1alpha1().ListenerTemplates(listenerTemplate.Namespace).Update(listenerTemplateCopy)
+	_, err := c.sampleclientset.SamplecontrollerV1alpha1().ListenerTemplates(listenerTemplate.Namespace).UpdateStatus(listenerTemplateCopy)
 	return err
 }
 

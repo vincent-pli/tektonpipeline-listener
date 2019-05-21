@@ -17,5 +17,5 @@ rules:
     resources: ["mutatingwebhookconfigurations"]
     verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
   - apiGroups: ["tekton.dev"]
-    resources: ["listenerTemplate"]
+    resources: ["listenerTemplate", "listenertemplates/status"]
     verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
