@@ -16,6 +16,6 @@ rules:
   - apiGroups: ["admissionregistration.k8s.io"]
     resources: ["mutatingwebhookconfigurations"]
     verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
-  - apiGroups: ["samplecontroller.k8s.io"]
+  - apiGroups: ["tekton.dev"]
     resources: ["listenerTemplate"]
     verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]

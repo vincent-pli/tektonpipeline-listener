@@ -1,0 +1,51 @@
+apiVersion: tekton.dev/v1alpha1
+kind: ListenerTemplate
+metadata:
+  name: simple-pipeline-template
+  namespace: listener
+spec:
+  params:
+    - name: gitrevision
+      description: git revision
+      default: master
+    - name: gitrepositoryurl
+      description: git repository url
+    - name: dockerusername
+      description: docker username
+    - name: dockerappname
+      description: docker app name
+  resources:
+    - kind: PipelineResource
+      metadata:
+        name: docker-image
+      spec:
+        type: image
+        params:
+        - name: url
+          value: "docker.io/${params.dockerusername}/${params.dockerappname}"
+    - kind: PipelineResource
+      metadata:
+        name: git-source
+      spec:
+        type: git
+        params:
+        - name: revision
+          value: ${params.gitrevision}
+        - name: url
+          value: ${params.gitrepositoryurl}
+  pipelinerun:
+    kind: PipelineRun
+    metadata:
+      name: simple-pipeline-run
+    spec:
+      pipelineRef:
+          name: simple-pipeline
+      trigger:
+        type: event
+      resources:
+      - name: git-source
+        resourceRef:
+          name: git-source
+      - name: docker-image
+        resourceRef:
+          name: docker-image
