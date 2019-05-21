@@ -40,8 +40,13 @@ var (
 )
 
 func main() {
-	flag.Parse()
+	flagset := flag.NewFlagSet("klog", flag.ExitOnError)
+	klog.InitFlags(flagset)
+	flagset.Set("logtostderr", "true")
+	flagset.Set("v", "4")
 
+	flag.Parse()
+        klog.Info("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
 	// set up signals so we handle the first shutdown signal gracefully
 	stopCh := signals.SetupSignalHandler()
 
