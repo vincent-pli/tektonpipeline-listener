@@ -1,13 +1,20 @@
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  name: foos.samplecontroller.k8s.io
+  name: listenerTemplates.tekton.dev
 spec:
-  group: samplecontroller.k8s.io
+  group: tekton.dev
   version: v1alpha1
   names:
-    kind: Foo
-    plural: foos
+    kind: ListenerTemplate
+    plural: listenerTemplates
+    categories:
+    - all
+    - tekton-pipelines
   scope: Namespaced
   subresources:
     status: {}
+  additionalPrinterColumns:
+  - name: Age
+    type: date
+    JSONPath: .metadata.creationTimestamp
