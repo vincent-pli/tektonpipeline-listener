@@ -19,7 +19,7 @@ package controller
 import (
 	"fmt"
 	"time"
-        "strconv"
+
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -125,7 +125,7 @@ func NewController(
 		UpdateFunc: func(old, new interface{}) {
 			controller.enqueuelistenerTemplate(new)
 		},
-		DeleteFunc: controller.enqueuelistenerTemplate,
+		DeleteFunc: controller.enqueuelistenerTemplateforDelete,
 	})
 	// Set up an event handler for when Deployment resources change. This
 	// handler will lookup the owner of the given Deployment, and if it is
@@ -270,16 +270,16 @@ func (c *Controller) syncHandler(key string) error {
 	}
 
 	if listenerTemplate.Finalizers == nil {
-		klog.Info("Add Finalizers to resource.");
+		klog.Info("Add Finalizers to resource.")
 		c.addFinalizer(listenerTemplate)
 	}
 
 	if listenerTemplate.DeletionTimestamp != nil {
 		err = c.finalize(listenerTemplate)
 		if err != nil {
-                	//c.recorder.Event(listenerTemplate, corev1.EventTypeWarning, FailedDeleted, MessageResourceDeleteFailed)
-                	return err
-                }
+			//c.recorder.Event(listenerTemplate, corev1.EventTypeWarning, FailedDeleted, MessageResourceDeleteFailed)
+			return err
+		}
 	}
 
 	if err != nil {
@@ -371,6 +371,39 @@ func (c *Controller) enqueuelistenerTemplate(obj interface{}) {
 		return
 	}
 	c.workqueue.Add(key)
+}
+
+func (c *Controller) enqueuelistenerTemplateforDelete(obj interface{}) {
+	var key string
+	var err error
+	if key, err = cache.MetaNamespaceKeyFunc(obj); err != nil {
+		utilruntime.HandleError(err)
+		return
+	}
+	// Convert the namespace/name string into a distinct namespace and name
+	namespace, name, err := cache.SplitMetaNamespaceKey(key)
+	if err != nil {
+		utilruntime.HandleError(fmt.Errorf("invalid resource key: %s", key))
+		return
+	}
+	// Get the listenerTemplate resource with this namespace/name
+	listenerTemplate, err := c.listenerTemplatesLister.ListenerTemplates(namespace).Get(name)
+	if err != nil {
+		// The Foo resource may no longer exist, in which case we stop
+		// processing.
+		if errors.IsNotFound(err) {
+			utilruntime.HandleError(fmt.Errorf("listenerTemplate '%s' in work queue no longer exists", key))
+			return
+		}
+
+		return
+	}
+	if listenerTemplate.HasReference() {
+		klog.Warning("could not delete ListenerTemplage, since the reference is not 0")
+		return
+	} else {
+		c.workqueue.Add(key)
+	}
 }
 
 // handleObject will take any resource implementing metav1.Object and attempt
@@ -468,9 +501,6 @@ func (c *Controller) finalize(source *samplev1alpha1.ListenerTemplate) error {
 	// Always remove the finalizer. If there's a failure cleaning up, an event
 	// will be recorded allowing the webhook to be removed manually by the
 	// operator.
-	if source.HasReference() {
-		return fmt.Errorf("could not delete ListenerTemplage, since the reference is not 0")
-	}
 	c.removeFinalizer(source)
 
 	return nil
