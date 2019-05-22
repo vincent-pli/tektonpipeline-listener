@@ -96,7 +96,7 @@ func (in *ListenerTemplateSpec) DeepCopyInto(out *ListenerTemplateSpec) {
 	}
 	if in.Resources != nil {
 		in, out := &in.Resources, &out.Resources
-		*out = make([]pipelinev1alpha1.PipelineResource, len(*in))
+		*out = make([]pipelinev1alpha1.PipelineResourceSpec, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
