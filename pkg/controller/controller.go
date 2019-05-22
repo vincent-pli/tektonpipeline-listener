@@ -19,7 +19,7 @@ package controller
 import (
 	"fmt"
 	"time"
-
+        "strconv"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -125,7 +125,7 @@ func NewController(
 		UpdateFunc: func(old, new interface{}) {
 			controller.enqueuelistenerTemplate(new)
 		},
-		//DeleteFunc: controller.delete
+		DeleteFunc: controller.enqueuelistenerTemplate,
 	})
 	// Set up an event handler for when Deployment resources change. This
 	// handler will lookup the owner of the given Deployment, and if it is
@@ -270,14 +270,20 @@ func (c *Controller) syncHandler(key string) error {
 	}
 
 	if listenerTemplate.Finalizers == nil {
+		klog.Info("Add Finalizers to resource.");
 		c.addFinalizer(listenerTemplate)
 	}
 
 	if listenerTemplate.DeletionTimestamp != nil {
 		err = c.finalize(listenerTemplate)
+		if err != nil {
+                	//c.recorder.Event(listenerTemplate, corev1.EventTypeWarning, FailedDeleted, MessageResourceDeleteFailed)
+                	return err
+                }
 	}
 
 	if err != nil {
+		//c.recorder.Event(listenerTemplate, corev1.EventTypeWarning, FailedDeleted, MessageResourceDeleteFailed)
 		return err
 	}
 	// deploymentName := foo.Spec.DeploymentName
@@ -349,7 +355,8 @@ func (c *Controller) updatelistenerTemplateStatus(listenerTemplate *samplev1alph
 	// we must use Update instead of UpdateStatus to update the Status block of the Foo resource.
 	// UpdateStatus will not allow changes to the Spec of the resource,
 	// which is ideal for ensuring nothing other than resource status has been updated.
-	_, err := c.sampleclientset.SamplecontrollerV1alpha1().ListenerTemplates(listenerTemplate.Namespace).UpdateStatus(listenerTemplateCopy)
+	_, err := c.sampleclientset.SamplecontrollerV1alpha1().ListenerTemplates(listenerTemplate.Namespace).Update(listenerTemplateCopy)
+	_, err = c.sampleclientset.SamplecontrollerV1alpha1().ListenerTemplates(listenerTemplate.Namespace).UpdateStatus(listenerTemplateCopy)
 	return err
 }
 
@@ -461,11 +468,10 @@ func (c *Controller) finalize(source *samplev1alpha1.ListenerTemplate) error {
 	// Always remove the finalizer. If there's a failure cleaning up, an event
 	// will be recorded allowing the webhook to be removed manually by the
 	// operator.
-	c.removeFinalizer(source)
 	if source.HasReference() {
-		c.recorder.Event(source, corev1.EventTypeWarning, FailedDeleted, MessageResourceDeleteFailed)
 		return fmt.Errorf("could not delete ListenerTemplage, since the reference is not 0")
 	}
+	c.removeFinalizer(source)
 
 	return nil
 }
