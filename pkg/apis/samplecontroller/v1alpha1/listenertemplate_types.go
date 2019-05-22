@@ -35,9 +35,9 @@ type ListenerTemplate struct {
 
 // ListenerTemplateSpec is the spec for a listenerTemplate resource
 type ListenerTemplateSpec struct {
-	Params      []TemplateParam                     `json:"params,omitempty"`
-	Resources   []pipelinev1alpha1.PipelineResource `json:"resources,omitempty"`
-	PipelineRun pipelinev1alpha1.PipelineRun        `json:"pipelinerun,omitempty"`
+	Params      []TemplateParam                         `json:"params,omitempty"`
+	Resources   []pipelinev1alpha1.PipelineResourceSpec `json:"resources,omitempty"`
+	PipelineRun pipelinev1alpha1.PipelineRunSpec        `json:"pipelinerun,omitempty"`
 }
 
 // TemplateParam defines arbitrary parameters needed by a Pipelinerun, Resource defined in the ListenerTemplate.
