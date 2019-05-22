@@ -268,7 +268,11 @@ func (c *Controller) syncHandler(key string) error {
 	}
 
 	if listenerTemplate.DeletionTimestamp != nil {
-		controllerErr = c.finalize(listenerTemplate)
+		err = c.finalize(listenerTemplate)
+	}
+
+	if err != nil {
+		return err
 	}
 	// deploymentName := foo.Spec.DeploymentName
 	// if deploymentName == "" {
@@ -451,8 +455,8 @@ func (c *Controller) finalize(source *samplev1alpha1.ListenerTemplate) error {
 	// Always remove the finalizer. If there's a failure cleaning up, an event
 	// will be recorded allowing the webhook to be removed manually by the
 	// operator.
-	r.removeFinalizer(source)
-	if source.HasReference {
+	c.removeFinalizer(source)
+	if source.HasReference() {
 		return fmt.Errorf("could not delete ListenerTemplage, since the reference is not 0")
 	}
 
