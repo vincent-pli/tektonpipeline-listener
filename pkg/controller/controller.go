@@ -45,8 +45,10 @@ import (
 const controllerAgentName = "tektonpipeline-listener"
 
 const (
-	// SuccessSynced is used as part of the Event 'reason' when a Foo is synced
+	// SuccessSynced is used as part of the Event 'reason' when a ListenerTemplate is synced
 	SuccessSynced = "Synced"
+	// FailedDeleted is used as part of the Event 'reason' when a ListenerTemplate is delete failed
+	FailedDeleted = "FailedDeleted"
 	// ErrResourceExists is used as part of the Event 'reason' when a Foo fails
 	// to sync due to a Deployment of the same name already existing.
 	ErrResourceExists = "ErrResourceExists"
@@ -57,6 +59,10 @@ const (
 	// MessageResourceSynced is the message used for an Event fired when a Foo
 	// is synced successfully
 	MessageResourceSynced = "ListenerTemplate synced successfully"
+
+	// MessageResourceDeleteFailed is the message used for an Event fired when a ListenerTemplate
+	// is failed to delete
+	MessageResourceDeleteFailed = "ListenerTemplate delete failed, since refrence from EventBinding"
 
 	listenerTemdplateFinalizerName = "listenerTemdplate-finalizer"
 )
@@ -457,6 +463,7 @@ func (c *Controller) finalize(source *samplev1alpha1.ListenerTemplate) error {
 	// operator.
 	c.removeFinalizer(source)
 	if source.HasReference() {
+		c.recorder.Event(source, corev1.EventTypeWarning, FailedDeleted, MessageResourceDeleteFailed)
 		return fmt.Errorf("could not delete ListenerTemplage, since the reference is not 0")
 	}
 
