@@ -272,6 +272,10 @@ func (c *Controller) syncHandler(key string) error {
 	if listenerTemplate.Finalizers == nil {
 		klog.Info("Add Finalizers to resource.")
 		c.addFinalizer(listenerTemplate)
+		err = c.updatelistenerTemplate(listenerTemplate)
+		if err != nil {
+			return err
+		}
 	}
 
 	if listenerTemplate.DeletionTimestamp != nil {
@@ -335,13 +339,30 @@ func (c *Controller) syncHandler(key string) error {
 
 	// Finally, we update the status block of the Foo resource to reflect the
 	// current state of the world
-	err = c.updatelistenerTemplateStatus(listenerTemplate)
-	if err != nil {
-		return err
+	if !listenerTemplate.HasReference() {
+		err = c.updatelistenerTemplateStatus(listenerTemplate)
+		if err != nil {
+			return err
+		}
 	}
 
 	c.recorder.Event(listenerTemplate, corev1.EventTypeNormal, SuccessSynced, MessageResourceSynced)
 	return nil
+}
+
+func (c *Controller) updatelistenerTemplate(listenerTemplate *samplev1alpha1.ListenerTemplate) error {
+	// NEVER modify objects from the store. It's a read-only, local cache.
+	// You can use DeepCopy() to make a deep copy of original object and modify this copy
+	// Or create a copy manually for better performance
+	listenerTemplateCopy := listenerTemplate.DeepCopy()
+	listenerTemplateCopy.Status.AvailableReference = 10
+	// fooCopy.Status.AvailableReplicas = deployment.Status.AvailableReplicas
+	// If the CustomResourceSubresources feature gate is not enabled,
+	// we must use Update instead of UpdateStatus to update the Status block of the Foo resource.
+	// UpdateStatus will not allow changes to the Spec of the resource,
+	// which is ideal for ensuring nothing other than resource status has been updated.
+	_, err := c.sampleclientset.SamplecontrollerV1alpha1().ListenerTemplates(listenerTemplate.Namespace).Update(listenerTemplateCopy)
+	return err
 }
 
 func (c *Controller) updatelistenerTemplateStatus(listenerTemplate *samplev1alpha1.ListenerTemplate) error {
@@ -355,8 +376,7 @@ func (c *Controller) updatelistenerTemplateStatus(listenerTemplate *samplev1alph
 	// we must use Update instead of UpdateStatus to update the Status block of the Foo resource.
 	// UpdateStatus will not allow changes to the Spec of the resource,
 	// which is ideal for ensuring nothing other than resource status has been updated.
-	_, err := c.sampleclientset.SamplecontrollerV1alpha1().ListenerTemplates(listenerTemplate.Namespace).Update(listenerTemplateCopy)
-	_, err = c.sampleclientset.SamplecontrollerV1alpha1().ListenerTemplates(listenerTemplate.Namespace).UpdateStatus(listenerTemplateCopy)
+	_, err := c.sampleclientset.SamplecontrollerV1alpha1().ListenerTemplates(listenerTemplate.Namespace).UpdateStatus(listenerTemplateCopy)
 	return err
 }
 
