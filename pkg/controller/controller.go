@@ -23,6 +23,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/wait"
 	appsinformers "k8s.io/client-go/informers/apps/v1"
 	"k8s.io/client-go/kubernetes"
@@ -55,7 +56,9 @@ const (
 	MessageResourceExists = "Resource %q already exists and is not managed by Foo"
 	// MessageResourceSynced is the message used for an Event fired when a Foo
 	// is synced successfully
-	MessageResourceSynced = "Foo synced successfully"
+	MessageResourceSynced = "ListenerTemplate synced successfully"
+
+	listenerTemdplateFinalizerName = "listenerTemdplate-finalizer"
 )
 
 // Controller is the controller implementation for Foo resources
@@ -116,6 +119,7 @@ func NewController(
 		UpdateFunc: func(old, new interface{}) {
 			controller.enqueuelistenerTemplate(new)
 		},
+		//DeleteFunc: controller.delete
 	})
 	// Set up an event handler for when Deployment resources change. This
 	// handler will lookup the owner of the given Deployment, and if it is
@@ -252,13 +256,20 @@ func (c *Controller) syncHandler(key string) error {
 		// The Foo resource may no longer exist, in which case we stop
 		// processing.
 		if errors.IsNotFound(err) {
-			utilruntime.HandleError(fmt.Errorf("foo '%s' in work queue no longer exists", key))
+			utilruntime.HandleError(fmt.Errorf("listenerTemplate '%s' in work queue no longer exists", key))
 			return nil
 		}
 
 		return err
 	}
 
+	if listenerTemplate.Finalizers == nil {
+		c.addFinalizer(listenerTemplate)
+	}
+
+	if listenerTemplate.DeletionTimestamp != nil {
+		controllerErr = c.finalize(listenerTemplate)
+	}
 	// deploymentName := foo.Spec.DeploymentName
 	// if deploymentName == "" {
 	// 	// We choose to absorb the error here as the worker would requeue the
@@ -423,3 +434,27 @@ func (c *Controller) enqueuelistenerTemplate(obj interface{}) {
 // 		},
 // 	}
 // }
+
+func (c *Controller) addFinalizer(s *samplev1alpha1.ListenerTemplate) {
+	finalizers := sets.NewString(s.Finalizers...)
+	finalizers.Insert(listenerTemdplateFinalizerName)
+	s.Finalizers = finalizers.List()
+}
+
+func (c *Controller) removeFinalizer(s *samplev1alpha1.ListenerTemplate) {
+	finalizers := sets.NewString(s.Finalizers...)
+	finalizers.Delete(listenerTemdplateFinalizerName)
+	s.Finalizers = finalizers.List()
+}
+
+func (c *Controller) finalize(source *samplev1alpha1.ListenerTemplate) error {
+	// Always remove the finalizer. If there's a failure cleaning up, an event
+	// will be recorded allowing the webhook to be removed manually by the
+	// operator.
+	r.removeFinalizer(source)
+	if source.HasReference {
+		return fmt.Errorf("could not delete ListenerTemplage, since the reference is not 0")
+	}
+
+	return nil
+}

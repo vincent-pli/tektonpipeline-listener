@@ -63,3 +63,8 @@ type ListenerTemplateList struct {
 
 	Items []ListenerTemplate `json:"items"`
 }
+
+// HasReference returns true if AvailableReference in Status is not 0 .
+func (lt *ListenerTemplate) HasReference() bool {
+	return lt.Status.AvailableReference != 0
+}
