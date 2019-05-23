@@ -123,6 +123,16 @@ func NewController(
 	listenerTemplateInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: controller.enqueuelistenerTemplate,
 		UpdateFunc: func(old, new interface{}) {
+			klog.Info("update.......********")
+			oldTemplate := old.(*samplev1alpha1.ListenerTemplate)
+			newTemplate := new.(*samplev1alpha1.ListenerTemplate)
+			klog.Info(oldTemplate.ResourceVersion)
+			klog.Info(newTemplate.ResourceVersion)
+			if oldTemplate.ResourceVersion == newTemplate.ResourceVersion {
+				// Periodic resync will send update events for all known Networks.
+				// Two different versions of the same Network will always have different RVs.
+				return
+			}
 			controller.enqueuelistenerTemplate(new)
 		},
 		DeleteFunc: controller.enqueuelistenerTemplateforDelete,
@@ -351,6 +361,7 @@ func (c *Controller) syncHandler(key string) error {
 }
 
 func (c *Controller) updatelistenerTemplate(listenerTemplate *samplev1alpha1.ListenerTemplate) error {
+	klog.Info("Update template...........................")
 	// NEVER modify objects from the store. It's a read-only, local cache.
 	// You can use DeepCopy() to make a deep copy of original object and modify this copy
 	// Or create a copy manually for better performance
@@ -366,6 +377,7 @@ func (c *Controller) updatelistenerTemplate(listenerTemplate *samplev1alpha1.Lis
 }
 
 func (c *Controller) updatelistenerTemplateStatus(listenerTemplate *samplev1alpha1.ListenerTemplate) error {
+	klog.Info("updateStatus............................")
 	// NEVER modify objects from the store. It's a read-only, local cache.
 	// You can use DeepCopy() to make a deep copy of original object and modify this copy
 	// Or create a copy manually for better performance
@@ -394,6 +406,7 @@ func (c *Controller) enqueuelistenerTemplate(obj interface{}) {
 }
 
 func (c *Controller) enqueuelistenerTemplateforDelete(obj interface{}) {
+	klog.Info("delete event received.............")
 	var key string
 	var err error
 	if key, err = cache.MetaNamespaceKeyFunc(obj); err != nil {
@@ -521,7 +534,8 @@ func (c *Controller) finalize(source *samplev1alpha1.ListenerTemplate) error {
 	// Always remove the finalizer. If there's a failure cleaning up, an event
 	// will be recorded allowing the webhook to be removed manually by the
 	// operator.
+	klog.Info("Delete...............")
 	c.removeFinalizer(source)
-
+	c.updatelistenerTemplate(source)
 	return nil
 }
