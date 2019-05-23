@@ -24,6 +24,8 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
+	// EventBindings returns a EventBindingInformer.
+	EventBindings() EventBindingInformer
 	// ListenerTemplates returns a ListenerTemplateInformer.
 	ListenerTemplates() ListenerTemplateInformer
 }
@@ -37,6 +39,11 @@ type version struct {
 // New returns a new Interface.
 func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakListOptions internalinterfaces.TweakListOptionsFunc) Interface {
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
+}
+
+// EventBindings returns a EventBindingInformer.
+func (v *version) EventBindings() EventBindingInformer {
+	return &eventBindingInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // ListenerTemplates returns a ListenerTemplateInformer.

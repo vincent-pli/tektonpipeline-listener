@@ -18,6 +18,14 @@ limitations under the License.
 
 package v1alpha1
 
+// EventBindingListerExpansion allows custom methods to be added to
+// EventBindingLister.
+type EventBindingListerExpansion interface{}
+
+// EventBindingNamespaceListerExpansion allows custom methods to be added to
+// EventBindingNamespaceLister.
+type EventBindingNamespaceListerExpansion interface{}
+
 // ListenerTemplateListerExpansion allows custom methods to be added to
 // ListenerTemplateLister.
 type ListenerTemplateListerExpansion interface{}

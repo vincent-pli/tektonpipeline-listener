@@ -28,6 +28,10 @@ type FakeSamplecontrollerV1alpha1 struct {
 	*testing.Fake
 }
 
+func (c *FakeSamplecontrollerV1alpha1) EventBindings(namespace string) v1alpha1.EventBindingInterface {
+	return &FakeEventBindings{c, namespace}
+}
+
 func (c *FakeSamplecontrollerV1alpha1) ListenerTemplates(namespace string) v1alpha1.ListenerTemplateInterface {
 	return &FakeListenerTemplates{c, namespace}
 }
