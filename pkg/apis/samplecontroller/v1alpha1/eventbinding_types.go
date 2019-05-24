@@ -33,11 +33,17 @@ type EventBinding struct {
 	Status EventBindingStatus `json:"status"`
 }
 
-// EventBindingSpec is the spec for a listenerTemplate resource
+// EventBindingSpec is the spec for a eventBinding resource
 type EventBindingSpec struct {
-	TemplateRef TemplateRef `json:"templateRef"`
-	Event       Event       `json:"event"`
-	Params      []Param     `json:"params,omitempty"`
+	// ServiceAccountName holds the name of the Kubernetes service account
+	// as which the underlying K8s resources should be run. If unspecified
+	// this will default to the "default" service account for the namespace
+	// in which the GitLabSource exists.
+	// +optional
+	ServiceAccountName string      `json:"serviceAccountName,omitempty"`
+	TemplateRef        TemplateRef `json:"templateRef"`
+	Event              Event       `json:"event"`
+	Params             []Param     `json:"params,omitempty"`
 }
 
 // Event use to define a cloud event.
@@ -48,7 +54,7 @@ type Event struct {
 	Type string `json:"type,omitempty"`
 }
 
-// TemplateRef can be used to refer to a specific instance of a ListenerTemplate.
+// TemplateRef can be used to refer to a specific instance of a eventBinding.
 type TemplateRef struct {
 	// Name of the referent
 	Name string `json:"name,omitempty"`
@@ -63,7 +69,7 @@ type Param struct {
 	Value string `json:"value"`
 }
 
-// EventBindingStatus is the status for a ListenerTemplate resource
+// EventBindingStatus is the status for a eventBinding resource
 type EventBindingStatus struct {
 	duckv1beta1.Status `json:",inline"`
 }
